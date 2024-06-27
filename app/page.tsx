@@ -20,6 +20,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { createUser } from '@/actions/createLorem'
 import { getLorems } from '@/actions/getLorem'
+import { deleteUser } from '@/actions/deleteLorem'
 
 const Home = () => {
 
@@ -44,14 +45,27 @@ const Home = () => {
  
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    //
-    // console.log(values)
-    //fetching from the database
-   
-
-    createUser(values)
+    try {
+      const newUser =  createUser(values);
+      console.log('New user created:', newUser); // Debugging: Check created user data
+      setUsers((prevUsers) => [...prevUsers, newUser]); // Update users list with new user
+    } catch (error) {
+      console.error('Error creating user:', error);
+    }
+    
   }
+  const handleDelete = async (id: number) => {
+    try {
+      const response = await deleteUser(id);
+      if (response.success) {
+        setUsers((prevUsers) => prevUsers.filter((user) => user.id !== id)); // Remove user from state
+      } else {
+        console.error('Failed to delete user');
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error);
+    }
+  };
   return (
     <div className=' flex flex-col bg-yellow-100 h-screen '>
       
@@ -104,16 +118,16 @@ const Home = () => {
           </div>
       </div> */}
       <div className='pt-8 px-8 grid grid-rows-3 gap-4'>
-      {users.map((users: any) => (
-        <div key={users.id} className='bg-white shadow-xl rounded min-h-[90px] text-center text-black text-3xl'>
-          <div>{users.username}</div>
-          {/* Add more user data here, like user.email, user.name, etc. */}
-          <Button className='flex flex-col bg-red-600'>
-            Click me
-          </Button>
-        </div>
-      ))}
-    </div>
+        {users.map((user) => (
+          <div key={user.id} className='bg-white shadow-xl rounded min-h-[80px] text-center text-black '>
+            <div>Username: {user.name}</div>
+            <div>Created At: {new Date(user.createdAt).toLocaleString()}</div>
+            <div>Updated At: {new Date(user.updatedAt).toLocaleString()}</div>
+            <div>Completed: {user.isCompleted ? "Yes" : "No"}</div>
+            <Button className='flex flex-col bg-red-600' onClick={() => handleDelete(user.id)}>Delete</Button>
+          </div>
+        ))}
+      </div>
 
       
     </div>
